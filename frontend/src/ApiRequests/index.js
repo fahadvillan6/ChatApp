@@ -1,0 +1,28 @@
+import axios from 'axios';
+const baseURL = import.meta.env.VITE_BACKEND_URL;
+
+const Instance = axios.create({ baseURL, withCredentials: true });
+export const registerApi = async (data) => {
+  return await Instance.post('/register', data);
+};
+export const LoginApi = async (data) => {
+  return await Instance.post('/login', data);
+};
+
+export const fetchUsers = async () => {
+  return await Instance.get('/users');
+};
+export const findChats = async () => {
+  return await Instance.get('/c');
+};
+export const createRoomApi = async (userId) => {
+  return await Instance.post(`/room`, { userId });
+};
+
+export const fetchMessagesApi = async (id) => {
+  return await Instance.get(`/messages/${id}`);
+};
+
+export const sendMessageApi = async (data) => {
+  return await Instance.post('/sendmessage', data);
+};
