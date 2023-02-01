@@ -16,7 +16,7 @@ export const doLogin = async (req, res) => {
           expires: new Date(Date.now() + 5 * 3600000),
           httpOnly: true,
         })
-        .send({ exist: true, success: true, Name: exist.Name });
+        .send({ success: true, Name: exist.Name ,id:exist._id});
     }
     res.sendStatus(500);
   } catch (error) {

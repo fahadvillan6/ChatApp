@@ -21,9 +21,9 @@ export default function LoginForm() {
       const body = formik.values;
       const { data } = await LoginApi(body);
       if (data.success) {
-        dispatch(setAuth({ auth: true, Name: data.Name, userId: data._id }));
+        dispatch(setAuth(true));
         dispatch(setName(data.Name));
-        // dispatch(setId)
+        dispatch(setId(data.id));
         navigate('/');
       }
     },

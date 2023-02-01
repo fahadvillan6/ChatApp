@@ -1,26 +1,49 @@
 import { useRef } from 'react';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import InputEmoji from 'react-input-emoji';
 import { fetchMessagesApi, sendMessageApi } from '../ApiRequests';
 
-export default function Conversation({ currentChat, users }) {
+export default function Conversation({ currentChat, users, socket }) {
   const [chats, setChats] = useState([]);
-  const { userid } = useSelector((state) => state.auth);
-  const messageRef = useRef('');
+  const { userId } = useSelector((state) => state.auth);
+  const [newMessage, setNewMessage] = useState();
+  const [inputMsg, SetInputMessage] = useState();
   console.log(users, 'users');
+  console.log(socket?.current, 'current');
   useEffect(() => {
     const fetchMessages = async () => {
-      const { data } = await fetchMessagesApi(currentChat[0]?._id);
+      const { data } = await fetchMessagesApi(currentChat?._id);
       setChats(data);
     };
-    currentChat.length && fetchMessages();
+    currentChat !== null && fetchMessages();
   }, [currentChat]);
-  console.log(currentChat, '90');
+  const user = currentChat?.users?.filter((values) => values._id !== userId);
+
   const sendMessage = async () => {
+    if (inputMsg.trim() === '') return;
     const { data } = await sendMessageApi({
-      Content: messageRef.current.value,
-      ChatId: currentChat[0]?._id,
+      Content: inputMsg,
+      ChatId: currentChat?._id,
     });
+    if (data) {
+      // setNewMessage(data);
+      setChats([...chats, data]);
+      data.reciever = user[0]._id;
+      socket.current.emit('send-message', data);
+    }
+  };
+  useEffect(() => {
+    console.log(socket.current.on);
+    socket.current?.on('recieve-message', (data) => {
+      console.log(data, 'ddd');
+      // setNewMessage(data);
+      setChats([...chats, data]);
+    });
+  }, []);
+
+  const onlineCheck = () => {
+    return users.some((val) => val.userId === user[0]._id);
   };
 
   return (
@@ -28,51 +51,60 @@ export default function Conversation({ currentChat, users }) {
       <div className='flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4'>
         <div className='flex flex-col h-full overflow-x-auto mb-4'>
           <div className='flex flex-col h-full'>
-            {currentChat.length ? (
+            {currentChat ? (
               <>
                 <nav className='p-3 border-gray-200 rounded bg-gray-50 dark:bg-gray-800 dark:border-gray-700'>
-                  <div className='flex gap-5'>
+                  {/* <div className='flex gap-5'>
                     <img src='' alt='avatar' />
                     <p>Name</p>
                   </div>
-                  <span className='ml-5'>online</span>
+                  <span className='ml-5'>
+                    {onlineCheck() ? 'online' : 'offline'}
+                  </span> */}
+                  <div className='flex'>
+                    <div className='w-12 h-12 mr-4 relative flex flex-shrink-0'>
+                      <img
+                        className='shadow-md rounded-full w-full h-full object-cover'
+                        src={
+                          'https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png'
+                        }
+                        alt=''
+                      />
+                    </div>
+                    <div className='text-sm'>
+                      <p className='font-bold'>{user[0].Name}</p>
+                      {/* <p>{isOnline ? "online" : "offline"}</p> */}
+                      <p>{onlineCheck() ? 'online' : 'offline'}</p>
+                    </div>
+                  </div>
                 </nav>
                 <div className='grid grid-cols-12 gap-y-2 h-auto '>
                   {chats.map((chat) => {
                     return (
                       <>
                         <div
+                          key={chat._id}
                           className={
-                            userid === chat.sender._id
+                            userId !== chat?.sender._id
                               ? 'col-start-1 col-end-8 p-3 rounded-lg'
                               : 'col-start-6 col-end-13 p-3 rounded-lg'
                           }
                         >
                           <div
                             className={
-                              userid === chat.sender._id
+                              userId !== chat?.sender._id
                                 ? 'flex flex-row items-center'
                                 : 'flex items-center justify-start flex-row-reverse'
                             }
                           >
                             <div className='flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0'>
-                              {chat.sender.Name[0]}
+                              {chat?.sender.Name[0]}
                             </div>
                             <div className='relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl'>
-                              <div>{chat.Content}</div>
+                              <div>{chat?.Content}</div>
                             </div>
                           </div>
-                        </div>{' '}
-                        {/* <div className='col-start-6 col-end-13 p-3 rounded-lg'>
-                  <div className='flex items-center justify-start flex-row-reverse'>
-                    <div className='flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0'>
-                      A
-                    </div>
-                    <div className='relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl'>
-                      <div>I'm ok what about you?</div>
-                    </div>
-                  </div>
-                </div> */}
+                        </div>
                       </>
                     );
                   })}
@@ -106,27 +138,12 @@ export default function Conversation({ currentChat, users }) {
           </div>
           <div className='flex-grow ml-4'>
             <div className='relative w-full'>
-              <input
-                ref={messageRef}
-                type='text'
-                className='flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10'
+              <InputEmoji
+                onEnter={sendMessage}
+                cleanOnEnter
+                value={inputMsg}
+                onChange={(msg) => SetInputMessage(msg)}
               />
-              <button className='absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600'>
-                <svg
-                  className='w-6 h-6'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                  xmlns='http://www.w3.org/2000/svg'
-                >
-                  <path
-                    stroke-linecap='round'
-                    stroke-linejoin='round'
-                    stroke-width='2'
-                    d='M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                  ></path>
-                </svg>
-              </button>
             </div>
           </div>
           <div className='ml-4'>

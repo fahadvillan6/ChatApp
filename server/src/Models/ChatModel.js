@@ -4,7 +4,7 @@ const ChatSchema = new Schema({
   users: [
     {
       type: Schema.Types.ObjectId,
-      ref: 'Users',
+      ref: 'User',
     },
   ],
   lastMessage: {
