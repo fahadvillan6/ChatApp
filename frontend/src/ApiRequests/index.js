@@ -1,10 +1,11 @@
 import axios from 'axios';
+import Cookie from 'universal-cookie';
 const baseURL = import.meta.env.VITE_BACKEND_URL;
-
+const cookie = new Cookie();
 const Instance = axios.create({
   baseURL,
   withCredentials: true,
-  headers: { token: localStorage.getItem('token') },
+  headers: { token: cookie.get('Token') },
 });
 export const registerApi = async (data) => {
   return await Instance.post('/register', data);
