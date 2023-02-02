@@ -1,7 +1,11 @@
 import axios from 'axios';
 const baseURL = import.meta.env.VITE_BACKEND_URL;
 
-const Instance = axios.create({ baseURL, withCredentials: true });
+const Instance = axios.create({
+  baseURL,
+  withCredentials: true,
+  headers: { token: localStorage.getItem('token') },
+});
 export const registerApi = async (data) => {
   return await Instance.post('/register', data);
 };

@@ -1,7 +1,7 @@
 import { verify } from 'jsonwebtoken';
 
 export default function auth(req, res, next) {
-  const { token } = req.cookies;
+  const { token } = req.cookies || req.headers;
 
   verify(token, process.env.JWI_SECRET, (err, decoded) => {
     if (err) {
