@@ -16,7 +16,7 @@ export const doLogin = async (req, res) => {
         .cookie('token', token, {
           expires: new Date(Date.now() + 5 * 3600000),
         })
-        .send({ success: true, Name: exist.Name, id: exist._id });
+        .send({ success: true, Name: exist.Name, id: exist._id, token });
     }
     res.status(500).send('password incorrect');
   } catch (error) {

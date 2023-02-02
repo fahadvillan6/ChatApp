@@ -6,8 +6,10 @@ import { LoginApi } from '../ApiRequests';
 import { setAuth, setId, setName } from '../Store/AuthSlice';
 import Toast from '../Shared/Toast';
 import { toast } from 'react-toastify';
+import Cookie from 'universal-cookie';
 
 export default function LoginForm() {
+  const cookie = new Cookie();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const validationSchema = Yup.object({
@@ -24,6 +26,8 @@ export default function LoginForm() {
       try {
         const { data } = await LoginApi(body);
         if (data.success) {
+          console.log(data);
+          cookie.set('Token', data.token);
           dispatch(setAuth(true));
           dispatch(setName(data.Name));
           dispatch(setId(data.id));
