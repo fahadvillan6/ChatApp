@@ -27,6 +27,7 @@ export default function LoginForm() {
         const { data } = await LoginApi(body);
         if (data.success) {
           console.log(data);
+          localStorage.setItem('token', data.token);
           cookie.set('Token', data.token);
           dispatch(setAuth(true));
           dispatch(setName(data.Name));

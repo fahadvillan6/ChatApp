@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import Cookie from 'universal-cookie';
 export default function PrivateRoutes() {
   const cookie = new Cookie();
-  const token = cookie.get('token');
+  const token = cookie.get('token') || Cookie.get('Token');
 
   if (token) return <Outlet />;
 

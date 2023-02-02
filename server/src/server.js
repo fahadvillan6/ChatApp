@@ -15,7 +15,7 @@ const server = createServer(app);
 Socket(server);
 app.use(
   cors({
-    origin: [process.env.CLIENT, ',http://localhost:5173'],
+    origin: [process.env.CLIENT, 'http://localhost:5173'],
     credentials: true,
   })
 );

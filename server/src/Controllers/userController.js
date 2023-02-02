@@ -15,6 +15,7 @@ export const doLogin = async (req, res) => {
       return res
         .cookie('token', token, {
           expires: new Date(Date.now() + 5 * 3600000),
+          secure: true,
         })
         .send({ success: true, Name: exist.Name, id: exist._id, token });
     }
