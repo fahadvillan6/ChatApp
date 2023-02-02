@@ -4,6 +4,8 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { LoginApi } from '../ApiRequests';
 import { setAuth, setId, setName } from '../Store/AuthSlice';
+import Toast from '../Shared/Toast';
+import { toast } from 'react-toastify';
 
 export default function LoginForm() {
   const dispatch = useDispatch();
@@ -19,12 +21,21 @@ export default function LoginForm() {
     validationSchema,
     onSubmit: async () => {
       const body = formik.values;
-      const { data } = await LoginApi(body);
-      if (data.success) {
-        dispatch(setAuth(true));
-        dispatch(setName(data.Name));
-        dispatch(setId(data.id));
-        navigate('/');
+      try {
+        const { data } = await LoginApi(body);
+        if (data.success) {
+          dispatch(setAuth(true));
+          dispatch(setName(data.Name));
+          dispatch(setId(data.id));
+          setTimeout(() => {
+            navigate('/');
+          }, 300);
+        } else {
+          toast.error('login failed');
+        }
+      } catch (error) {
+        console.log(error.response.data);
+        toast.error(error.response.data);
       }
     },
   });
@@ -43,6 +54,7 @@ export default function LoginForm() {
           />
           ChatApp
         </a>
+        <Toast />
         <div className='w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700'>
           <div className='p-6 space-y-4 md:space-y-6 sm:p-8'>
             <h1 className='text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white'>

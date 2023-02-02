@@ -13,7 +13,7 @@ export const fetchUsers = async () => {
   return await Instance.get('/users');
 };
 export const findChats = async () => {
-  return await Instance.get('/c');
+  return await Instance.get('/chats');
 };
 export const createRoomApi = async (userId) => {
   return await Instance.post(`/room`, { userId });
@@ -25,4 +25,12 @@ export const fetchMessagesApi = async (id) => {
 
 export const sendMessageApi = async (data) => {
   return await Instance.post('/sendmessage', data);
+};
+
+export const SearchUser = async (data) => {
+  return await Instance.get(`/search?key=${data}`);
+};
+
+export const fetchUserDetails = async () => {
+  return await Instance.get('/fetchUser');
 };

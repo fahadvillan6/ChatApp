@@ -13,7 +13,12 @@ app.use(express.json());
 app.use(CookieParser());
 const server = createServer(app);
 Socket(server);
-app.use(cors({ origin: process.env.CLIENT, credentials: true }));
+app.use(
+  cors({
+    origin: [process.env.CLIENT, 'https://chaatme.netlify.app'],
+    credentials: true,
+  })
+);
 
 app.use('/', router);
 const port = process.env.PORT || 3000;

@@ -2,8 +2,11 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { registerApi } from '../ApiRequests';
+import Toast from '../Shared/Toast';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignupForm() {
+  const navigate = useNavigate();
   const validationSchema = Yup.object({
     Name: Yup.string()
       .max(15, 'Must be 15 characters or less')
@@ -26,6 +29,10 @@ export default function SignupForm() {
       const body = formik.values;
       console.log(body);
       const { data } = await registerApi(body);
+      if (data.exist) toast.error('user-already-exist');
+      else if (data.success) {
+        navigate('/login');
+      }
       try {
       } catch (error) {
         console.log(error);
@@ -46,6 +53,7 @@ export default function SignupForm() {
           />
           ChatApp
         </a>
+        <Toast />
         <div className='w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700'>
           <div className='p-6 space-y-4 md:space-y-6 sm:p-8'>
             <h1 className='text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white'>

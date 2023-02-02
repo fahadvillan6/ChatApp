@@ -1,16 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { createRoomApi, fetchUsers } from '../ApiRequests';
+import { useNavigate } from 'react-router-dom';
+import Cookie from 'universal-cookie';
+import {
+  createRoomApi,
+  fetchUsers,
+  findChats,
+  SearchUser,
+} from '../ApiRequests';
 
 export default function Chat({ setChat }) {
   const { Name } = useSelector((state) => state.auth);
   const [users, setUsers] = useState([]);
+  const [chats, setChats] = useState([]);
+  const searchRef = useRef();
+  const navigate = useNavigate();
+  const cookie = new Cookie();
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data } = await fetchUsers();
-      setUsers([...data]);
+    const fethChats = async () => {
+      const { data } = await findChats();
+      setChats([...data]);
     };
-    fetchUser();
+    fethChats();
+    // fetchUser();
   }, []);
   const createRoom = async (userid) => {
     try {
@@ -18,6 +30,18 @@ export default function Chat({ setChat }) {
       setChat(data);
     } catch (error) {}
   };
+  const logout = () => {
+    cookie.remove('token');
+    navigate('/login');
+  };
+  const searchUser = async () => {
+    const key = searchRef.current.value.trim();
+    if (key !== '') {
+      const { data } = await SearchUser(searchRef.current.value);
+      setUsers([...data]);
+    }
+  };
+
   return (
     <div className='flex h-screen antialiased text-gray-800'>
       <div className='flex flex-row h-full w-full overflow-x-hidden'>
@@ -44,36 +68,69 @@ export default function Chat({ setChat }) {
           <div className='flex flex-col items-center bg-indigo-100 border border-gray-200 mt-4 w-full py-6 px-4 rounded-lg'>
             <div className='h-20 w-20 rounded-full border overflow-hidden'>
               <img
-                src='https://avatars3.githubusercontent.com/u/2763884?s=128'
+                src='https://cdn.icon-icons.com/icons2/1378/PNG/512/avatardefault_92824.png'
+                // 'https://avatars3.githubusercontent.com/u/2763884?s=128'
                 alt='Avatar'
                 className='h-full w-full'
               />
             </div>
             <div className='text-sm font-semibold mt-2'>{Name}</div>
-            <div className='text-xs text-gray-500'>Lead UI/UX Designer</div>
-            <button className='mt-2'> logout</button>
+            {/* <div className='text-xs text-gray-500'>Lead UI/UX Designer</div> */}
+            <button className='mt-2 p-1 px-1 bg-white' onClick={logout}>
+              {' '}
+              logout
+            </button>
           </div>
           <div className='flex flex-col mt-8'>
-            <div className='flex flex-row items-center justify-between text-xs'>
-              <span className='font-bold'> Conversations</span>
-              {/* <span className='flex items-center justify-center bg-gray-300 h-4 w-4 rounded-full'>
-                
-              </span> */}
+            <div className='flex'>
+              <input
+                ref={searchRef}
+                className='border'
+                placeholder='searchUser'
+                type='text'
+              />
+              <button
+                onClick={searchUser}
+                className='bg-blue-500 rounded  px-2'
+              >
+                find
+              </button>
             </div>
+
+            {users.map((users) => (
+              <div className='flex flex-col space-y-1 mt-4 -mx-2 h-auto overflow-y-auto'>
+                <button
+                  onClick={() => createRoom(users._id)}
+                  className='flex flex-row items-center hover:bg-gray-100 rounded-xl p-2'
+                >
+                  <div className='flex items-center justify-center h-10 w-10 bg-indigo-200 rounded-full'>
+                    {users.Name[0]}
+                  </div>
+                  <div className='ml-4 text-sm font-semibold'>{users.Name}</div>
+                </button>
+              </div>
+            ))}
+
+            <div className='mt-2 flex flex-row items-center justify-between text-xs'>
+              <span className='font-bold'> Conversations</span>
+            </div>
+
             <div className='flex flex-col space-y-1 mt-4 -mx-2 h-auto overflow-y-auto'>
-              {users.map((user) => {
+              {chats.map((chat) => {
                 return (
                   <button
-                    key={user._id}
-                    onClick={() => createRoom(user._id)}
+                    key={chat.users._id}
+                    onClick={() => createRoom(chat.users._id)}
                     className='flex flex-row items-center hover:bg-gray-100 rounded-xl p-2'
                   >
                     <div className='flex items-center justify-center h-10 w-10 bg-indigo-200 rounded-full'>
-                      {user.Name[0]}
+                      {chat.users.Name[0]}
                     </div>
                     <div className='ml-4 text-sm font-semibold'>
-                      {user.Name}
-                      <p className='ml-3 text-sm font-normal'>lastchat</p>
+                      {chat.users.Name}
+                      <p className='ml-3 text-sm font-normal'>
+                        {chat.lastMessage}
+                      </p>
                     </div>
                   </button>
                 );
